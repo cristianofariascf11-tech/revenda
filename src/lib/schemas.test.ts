@@ -9,6 +9,16 @@ describe("validação de veículos",()=>{
   it("mantém o valor FIPE como referência opcional",()=>{const result=vehicleSchema.parse({...valid,fipe_reference_value:14500});expect(result.fipe_reference_value).toBe(14500);expect(vehicleSchema.parse(valid).fipe_reference_value).toBeNull();});
   it("normaliza e permite identificadores opcionais",()=>{const result=vehicleSchema.parse({...valid,chassis:" 9c2kc123 ",engine_number:""});expect(result.chassis).toBe("9C2KC123");expect(result.engine_number).toBeNull();});
   it("aceita moto consignada sem custo de compra",()=>{const result=vehicleSchema.parse({...valid,ownership_type:"consignada",purchase_price:""});expect(result.ownership_type).toBe("consignada");expect(result.purchase_price).toBeNull();});
+  it.each(["propria", "consignada"] as const)("preserva os dados de moto %s na validação do formulário e do servidor", ownership_type => {
+    const formValues = vehicleSchema.parse({ ...valid, ownership_type, purchase_price: ownership_type === "consignada" ? "" : valid.purchase_price, chassis: "", engine_number: "", fipe_reference_value: "", asking_price: "" });
+    expect(vehicleSchema.parse(formValues)).toEqual(formValues);
+    expect(formValues).toMatchObject({ purchase_price: ownership_type === "consignada" ? null : valid.purchase_price, chassis: null, engine_number: null, fipe_reference_value: null, asking_price: null });
+  });
+  it("rejeita compra nula para moto própria também no servidor",()=>{
+    const result=vehicleSchema.safeParse({...valid,ownership_type:"propria",purchase_price:null});
+    expect(result.success).toBe(false);
+    if(!result.success) expect(result.error.issues[0]?.path).toEqual(["purchase_price"]);
+  });
   it("continua exigindo custo de compra para moto própria",()=>expect(vehicleSchema.safeParse({...valid,ownership_type:"propria",purchase_price:""}).success).toBe(false));
 });
 

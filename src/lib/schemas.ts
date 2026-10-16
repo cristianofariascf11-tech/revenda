@@ -5,7 +5,7 @@ const money = z.coerce.number().finite().min(0).max(99_999_999);
 const requiredMoney = z.coerce.number().finite().positive().max(99_999_999);
 const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida");
 const optionalVehicleIdentifier = z.string().trim().max(80, "Use no máximo 80 caracteres")
-  .transform(value => value.toUpperCase()).optional().default("").transform(value => value || null);
+  .transform(value => value.toUpperCase()).nullable().optional().default("").transform(value => value || null);
 
 export const vehicleSchema = z.object({
   brand: z.string().trim().min(1, "Informe a marca").max(80),
@@ -16,9 +16,9 @@ export const vehicleSchema = z.object({
   engine_number: optionalVehicleIdentifier,
   ownership_type: z.enum(VEHICLE_OWNERSHIP_TYPES).default("propria"),
   entry_date: dateString,
-  purchase_price: z.union([z.literal(""), requiredMoney]).transform(value => value === "" ? null : value),
-  fipe_reference_value: z.union([z.literal(""), requiredMoney]).optional().default("").transform(value => value === "" ? null : value),
-  asking_price: z.union([z.literal(""), money]).transform(v => v === "" ? null : v),
+  purchase_price: z.union([z.literal(""), requiredMoney]).nullable().transform(value => value === "" ? null : value),
+  fipe_reference_value: z.union([z.literal(""), requiredMoney]).nullable().optional().default("").transform(value => value === "" ? null : value),
+  asking_price: z.union([z.literal(""), money]).nullable().transform(v => v === "" ? null : v),
   catalog_description: z.string().trim().max(1000, "Use no máximo 1000 caracteres").default(""),
   marketplace_reviewed: z.boolean().default(true),
   marketplace_warranty: z.boolean().default(true),
