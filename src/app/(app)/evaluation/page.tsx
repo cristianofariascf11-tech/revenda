@@ -1,0 +1,6 @@
+import type { Metadata } from "next";
+import { createClient } from "@/lib/supabase/server";
+import type { EvaluationCosts } from "@/lib/types";
+import { EvaluationForm } from "./evaluation-form";
+export const metadata:Metadata={title:"Avaliação"};
+export default async function EvaluationPage({searchParams}:{searchParams:Promise<{repeat?:string}>}){const{repeat}=await searchParams;let initial;if(repeat){const{data}=await(await createClient()).from("vehicle_evaluations").select("*").eq("id",repeat).single();if(data)initial={plate:data.plate,brand:data.brand,model:data.model,modelYear:data.model_year,chassis:data.chassis,engineNumber:data.engine_number,fipeValue:Number(data.fipe_value),discountPercent:Number(data.discount_percent),costs:data.additional_costs as EvaluationCosts,source:`Repetida de ${data.source}`,consultedAt:new Date().toISOString()};}return <main className="shell page stack"><div><span className="eyebrow">Compra inteligente</span><h1 className="page-title">Avaliação de motocicleta</h1><p className="muted">Consulte os fornecedores configurados, estime custos e chegue a uma oferta segura.</p></div><EvaluationForm initial={initial}/></main>}
